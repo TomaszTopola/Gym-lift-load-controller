@@ -42,6 +42,7 @@ const int limitSwitchPin = 15; //TODO IMPORTANT! INSERT VALID PIN NUMBER AND REM
  * param stepperID: contains id of stepper (0 or 1)
 */
 void stepperMove(int pulses, bool clockwise, int stepperID){
+    // TODO: decide if this section is necessary
     // if( stepperID >= stepperCount){
     //     return; //stops program from continuing in case someone provided invalid stepper ID
     // }
@@ -93,14 +94,18 @@ void setup() {
 int currentChangeIndicator = 0;     //the one that is applied and used with any motor operations
 int manipulatedChagneIndicator = 0; //the one that stores user input before acceptation
 void loop() {
+
+    // TODO: extract function or enjoy a spaghetti :)
     char key = customKeypad.getKey();
     if(key!=NO_KEY){
         if(key > 48 && key < 57){
-            //this section uses ASCII values to recognise user input and transform it into a number that is later used for motor movements
+            //this section uses ASCII values to recognise user input and transform 
+            //it into a number that is later used for motor movements
             manipulatedChagneIndicator = manipulatedChagneIndicator*10 + (key-48);
             displayManipulatedChangeIndicator();
         }else if(key=='A'){
             //apply
+            currentChangeIndicator = manipulatedChagneIndicator;
             lcd.setCursor(1,0)
             lcd.print("CURRENT: " + currentChangeIndicator)
         }else if(key=='B'){
