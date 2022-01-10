@@ -1,0 +1,12 @@
+Który silnik jest od czego
+który silnik ma być kalibrowany
+W którą stronę ma się obracać podczas kalibracji
+Co oznaczają poszczególne warunki w switchu
+
+KLAWIATURA:
+czy wprowadzamy kroki czy pełne obroty
+czy zatwierdzamy wartość przyciskiem
+
+OZNACZENIA:
+Od teraz posługujemy się oznaczeniami motorów: 0 i 1,
+oraz oznaczeniami kierunków: CW (clockwise) i CCW (counter-clockwise)

@@ -1,0 +1,6 @@
+POŁĄCZENIA:
+    Wyłącznik krańcowy podłączyć do wybranego pinu, a drugi koniec do masy - program korzysta z funkcjonalności INPUT_PULLUP
+
+
+KOD:
+34: WPROWADZIĆ POPRAWNY PIN WYŁĄCZNIKA KRAŃCOWEGO I USUNĄĆ KOMENTARZ
