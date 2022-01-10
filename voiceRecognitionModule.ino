@@ -61,7 +61,7 @@ void loop() {
           delayMicroseconds(500);
         }
         delay(2000);
-        break;
+        break; 
     }
   }
 }
