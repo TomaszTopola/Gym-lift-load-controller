@@ -13,6 +13,15 @@
 const int stepperCount = 2;
 const int stepPin[stepperCount] = {7, 9}; 
 const int dirPin[stepperCount] = {6, 8};
+const int limitSwitchPin[stepperCount] = {15, 16}; //TODO IMPORTANT! INSERT VALID PIN NUMBER AND REMOVE THIS COMMENT BEFORE LAUNCHING!
+
+// STEPPER CALIBRATION VARIABLES
+const int positionStepDifference = 200; //defines step distance between two positions.
+const int lockStepDifference = 200;     //defines step distance required to lock device on position
+const int scale = 5;
+const int maxPosition = 12;
+int currentLoad = 0;
+int currentPosition = 0;
 
 // LCD DEFINITION
 LiquidCrystal_I2C lcd = LiquidCrystal_I2C(0x27, 16, 2);
@@ -29,16 +38,6 @@ char hexaKeys[ROWS][COLS] = {
 byte rowPins[ROWS] = {14, 15, 16, 17}; 
 byte colPins[COLS] = {18, 19, 20, 21};
 Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
-
-// OTHER PINOUTS:
-const int limitSwitchPin = 15; //TODO IMPORTANT! INSERT VALID PIN NUMBER AND REMOVE THIS COMMENT BEFORE LAUNCHING!
-
-// STEPPER CONTROL VARIABLES
-// int currentChangeIndicator = 0;     //the one that is applied and used with any motor operations
-// int manipulatedChagneIndicator = 0; //the one that stores user input before acceptation
-const int positionStepDifference = 200; //change this value to define how much should the motor move to change one position
-const int scale = 5;
-int currentLoad = 0;
 
 /**
  * Applies motion on a stepper motor.
@@ -61,45 +60,16 @@ void stepperMove(int pulses, bool clockwise, int stepperID){
 }
 
 /**
- *  displays all data entered by user on the LCD 
- */
-// void displayManipulatedChangeIndicator(){
-//     lcd.setCursor(0,0);
-//     lcd.print(manipulatedChagneIndicator);
-// }
-
-/**
- * Sets steppers to position 0
+ * Sets steppers to position 0,0
  */
 void initialStepperCalibration(){
-    while(digitalRead(limitSwitchPin) == HIGH){
+    while(digitalRead(limitSwitchPin[1]) == HIGH){
+        stepperMove(1, false, 1);       //TODO: validate direction
+    }
+    while(digitalRead(limitSwitchPin[0]) == HIGH){
         stepperMove(1, true, 0);
     }
 }
-
-// void readKeypad(){
-//     char key = customKeypad.getKey();
-//     if(key!=NO_KEY){
-//         if(key > 48 && key < 57){
-//             //this section uses ASCII values to recognise user input and transform 
-//             //it into a number that is later used for motor movements
-//             manipulatedChagneIndicator = manipulatedChagneIndicator*10 + (key-48);
-//             displayManipulatedChangeIndicator();
-//         }else if(key=='A'){
-//             //apply
-//             currentChangeIndicator = manipulatedChagneIndicator;
-//             lcd.setCursor(0,1);
-//             lcd.print("CURRENT: " + currentChangeIndicator);
-//         }else if(key=='B'){
-//             //backspace
-//             manipulatedChagneIndicator /= 10;
-//         }else if(key=='C'){
-//             //clear
-//             manipulatedChagneIndicator = 0;
-//             displayManipulatedChangeIndicator();
-//         }
-//     }
-// }
 
 void readKeypad(){
     char key = customKeypad.getKey();
@@ -110,7 +80,8 @@ void readKeypad(){
             currentLoad = currentLoad*10 + (key-48);
         }else if(key=='A'){
             initialStepperCalibration();
-            movePosition(currentLoad/scale, false); //TODO: check if direction bool is correct
+            currentPosition = currentLoad/scale;
+            setPosition();
         }else if(key=='B'){
             currentLoad /= 10;
         }else if (key=='C'){
@@ -121,17 +92,40 @@ void readKeypad(){
     }
 }
 
+
+void setPosition(){             //WARNING! uses global variable - cureentPosition
+    initialStepperCalibration();
+    if(currentPosition == 0){
+        return;
+    }
+    stepperMove(currentPosition*positionStepDifference, false, 0);
+    stepperMove(lockStepDifference, true, 1);
+}
+
 /**
  * moves device position by selected value
  * param: difference - how many positions to move
  * param: up - true for moving up and false for moving down
  */
-void movePosition(int difference, bool up){
-    stepperMove(200, false, 1);
-    for(int i=0; i<difference; i++){
-        stepperMove(positionStepDifference, up, 0);
+void movePosition(int difference){
+    int futurePosition = currentPosition + difference;
+    if( futurePosition > maxPosition || futurePosition < 1){
+        return;     //add extra behaviour on limit cross here.
     }
-    stepperMove(200, true, 1);
+    if(difference == 0){
+        return;
+    }
+    bool up;
+    if(difference > 0){
+        up = false;
+    }else{
+        up = true;
+        difference = -difference;
+    }
+    stepperMove(lockStepDifference, false, 1);
+    stepperMove(positionStepDifference*difference, up, 0);
+    stepperMove(lockStepDifference, true, 1);
+    currentPosition = futurePosition;
 }
 
 void setup() {
@@ -142,8 +136,8 @@ void setup() {
         for(int i=0; i<stepperCount; i++){
             pinMode(stepPin[i], OUTPUT);
             pinMode(dirPin[i], OUTPUT);
-        }
-        pinMode(limitSwitchPin, INPUT_PULLUP);
+            pinMode(limitSwitchPin[i], INPUT_PULLUP);
+        }                 
         //VOICE RECOGNITION MODULE AND SERIAL COM
         Serial.begin(9600);
         Serial.write(0xAA);
@@ -161,10 +155,10 @@ void loop() {
     byte com = Serial.read();
     switch(com){
         case 0x11:
-            movePosition(1, true);//TODO: adjust direction params
+            movePosition(1);
             break;
         case 0x12:
-            movePosition(1, false);
+            movePosition(-1);
             break;
     }
 }
