@@ -1,3 +1,6 @@
+# Gym lift load controller with voice recognition
+Software for controller with voice recognition module used to change load on a gym lift. Based on Arduino Mega.
+![device preview](preview.png)
 ## Calibration
 
 ### Stepper labels
@@ -17,7 +20,7 @@
 `lockStepDifference` - steps amount needed to fully change horizontal locking pin position.<br>
 `scale` - kilograms difference between two consecutive weight.
 ## Kalibracja:
-
+Section below is a Polish translation of Calibration section above.
 ### Oznaczenia silników
 `0` - silnik poruszający urządzeniem w pionie<br>
 `1` - silnik poruszający trzpieniem blokującym<br>
