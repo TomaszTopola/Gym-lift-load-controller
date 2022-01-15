@@ -13,7 +13,7 @@
 const int stepperCount = 2;
 const int stepPin[stepperCount] = {7, 9}; 
 const int dirPin[stepperCount] = {6, 8};
-const int limitSwitchPin[stepperCount] = {15, 16}; //TODO IMPORTANT! INSERT VALID PIN NUMBER AND REMOVE THIS COMMENT BEFORE LAUNCHING!
+const int limitSwitchPin[stepperCount] = {5, 4}; //TODO IMPORTANT! INSERT VALID PIN NUMBER AND REMOVE THIS COMMENT BEFORE LAUNCHING!
 
 // STEPPER CALIBRATION VARIABLES
 const int positionStepDifference = 200; //defines step distance between two positions.
@@ -51,7 +51,7 @@ void stepperMove(int pulses, bool clockwise, int stepperID){
     }else{
         digitalWrite(dirPin[stepperID], LOW);
     }
-    for(int x = 0; x < pulses; x++) {
+    for(int i = 0; i < pulses; i++) {
         digitalWrite(stepPin[stepperID],HIGH); 
         delayMicroseconds(500); 
         digitalWrite(stepPin[stepperID],LOW); 
@@ -63,10 +63,15 @@ void stepperMove(int pulses, bool clockwise, int stepperID){
  * Sets steppers to position 0,0
  */
 void initialStepperCalibration(){
-    while(digitalRead(limitSwitchPin[1]) == HIGH){
+    lcd.clear()
+    lcd.setCursor(0,0);
+    lcd.print("SETTING UP 1");
+    while(digitalRead(limitSwitchPin[1]) == LOW){
         stepperMove(1, false, 1);       //TODO: validate direction
     }
-    while(digitalRead(limitSwitchPin[0]) == HIGH){
+    lcd.setCursor(0,0);
+    lcd.print("SETTING UP 1");
+    while(digitalRead(limitSwitchPin[0]) == LOW){
         stepperMove(1, true, 0);
     }
 }
@@ -130,14 +135,6 @@ void movePosition(int difference){
 
 void setup() {
     // HARDWARE SETUP
-        //PINMODES
-        lcd.init();
-        lcd.backlight();
-        for(int i=0; i<stepperCount; i++){
-            pinMode(stepPin[i], OUTPUT);
-            pinMode(dirPin[i], OUTPUT);
-            pinMode(limitSwitchPin[i], INPUT_PULLUP);
-        }                 
         //VOICE RECOGNITION MODULE AND SERIAL COM
         Serial.begin(9600);
         Serial.write(0xAA);
@@ -145,8 +142,20 @@ void setup() {
         delay(1000);
         Serial.write(0xAA);
         Serial.write(0x21);
-    // CALIBRATION
-    initialStepperCalibration();
+        //PINMODES
+        lcd.init();
+        lcd.backlight();
+        lcd.print("setting up");
+        for(int i=0; i<stepperCount; i++){
+            pinMode(stepPin[i], OUTPUT);
+            pinMode(dirPin[i], OUTPUT);
+            pinMode(limitSwitchPin[i], INPUT_PULLUP);
+        }                 
+        lcd.setCursor(0,0);
+        lcd.print("calibrating");
+        // CALIBRATION
+        initialStepperCalibration();
+        lcd.clear();
 }
 
 void loop() {
