@@ -35,8 +35,8 @@ char hexaKeys[ROWS][COLS] = {
   {'7','8','9','C'},        //C STANDS FOR CLEAR
   {'*','0','#','D'}
 };
-byte rowPins[ROWS] = {14, 15, 16, 17}; 
-byte colPins[COLS] = {18, 19, 20, 21};
+byte rowPins[ROWS] = {A0, A1, A2, A3}; 
+byte colPins[COLS] = {A4, A5, A6, A7};
 Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
 
 /**
@@ -63,7 +63,7 @@ void stepperMove(int pulses, bool clockwise, int stepperID){
  * Sets steppers to position 0,0
  */
 void initialStepperCalibration(){
-    lcd.clear()
+    lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("SETTING UP 1");
     while(digitalRead(limitSwitchPin[1]) == LOW){
@@ -88,12 +88,13 @@ void readKeypad(){
             currentPosition = currentLoad/scale;
             setPosition();
         }else if(key=='B'){
-            currentLoad /= 10;
+            currentLoad = currentLoad/10;
         }else if (key=='C'){
             currentLoad = 0;
         }
+        lcd.clear();
         lcd.setCursor(0,0);
-        lcd.print(currentLoad + " kg");
+        lcd.print(String(currentLoad) + " kg");
     }
 }
 
@@ -160,14 +161,19 @@ void setup() {
 
 void loop() {
     readKeypad();
-    
-    byte com = Serial.read();
-    switch(com){
-        case 0x11:
-            movePosition(1);
-            break;
-        case 0x12:
-            movePosition(-1);
-            break;
+    if(Serial.available()){
+        byte com = Serial.read();
+        switch(com){
+            case 0x11:
+                lcd.clear();
+                lcd.print("zwiekszam");
+                movePosition(1);
+                break;
+            case 0x12:
+                lcd.clear();
+                lcd.print("zmniejszam");
+                movePosition(-1);
+                break;
+        }
     }
 }
