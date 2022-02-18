@@ -70,7 +70,7 @@ void initialStepperCalibration(){
         stepperMove(1, false, 1);       //TODO: validate direction
     }
     lcd.setCursor(0,0);
-    lcd.print("SETTING UP 1");
+    lcd.print("SETTING UP 0");
     while(digitalRead(limitSwitchPin[0]) == LOW){
         stepperMove(1, true, 0);
     }
@@ -79,12 +79,11 @@ void initialStepperCalibration(){
 void readKeypad(){
     char key = customKeypad.getKey();
     if(key!=NO_KEY){
-        if(key > 48 && key < 57){
+        if(key >= 48 && key <= 57){
             //this section uses ASCII values to recognise user input and transform 
             //it into a number that is later used for motor movements
             currentLoad = currentLoad*10 + (key-48);
         }else if(key=='A'){
-            initialStepperCalibration();
             currentPosition = currentLoad/scale;
             setPosition();
         }else if(key=='B'){
